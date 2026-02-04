@@ -6,6 +6,7 @@ Community contributions for cogent3 and related projects.
 
 ## Data sampling
 <!-- contributions will be added here -->
+- [Takes nexus partition and alignment files and writes out separate alignment, dropping sequences with 0 canonical bases.](https://gist.github.com/GavinHuttley/790a024c90841967c647e1a1105a8b9b) by @GavinHuttley
 
 ## Phylogenetic analysis
 <!-- contributions will be added here -->
