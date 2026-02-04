@@ -20,8 +20,6 @@ Select "Blank issue" if:
 
 ### Data sampling
 <!-- contributions will be added here -->
-- [How to calculate a distance matrix using a empirical protein substitution model with piqtree.](https://gist.github.com/GavinHuttley/e65864e59b8ff36bd6cd051d41ed24d1) by @GavinHuttley
-- [How to calculate a distance matrix using a empirical protein substitution model with piqtree.](https://gist.github.com/GavinHuttley/bf67d26d8e49742cf569fda666097760) by @GavinHuttley
 - [Takes nexus partition and alignment files and writes out separate alignment, dropping sequences with 0 canonical bases.](https://gist.github.com/GavinHuttley/790a024c90841967c647e1a1105a8b9b) by @GavinHuttley
 
 ### Phylogenetic analysis
