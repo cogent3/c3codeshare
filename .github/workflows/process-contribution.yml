@@ -55,9 +55,26 @@ jobs:
             if (lines.length > 100) {
               core.setOutput('valid', 'false');
               core.setOutput('error', `Code exceeds 100 line limit (found ${lines.length} lines)`);
-            } else {
-              core.setOutput('valid', 'true');
+              core.setOutput('category', category);
+              core.setOutput('project', project);
+              core.setOutput('description', description);
+              core.setOutput('code', code);
+              return;
             }
+
+            // Validate that the selected project is imported
+            const importPattern = new RegExp(`^\\s*(import\\s+${project}|from\\s+${project}[\\s.])`, 'm');
+            if (!importPattern.test(code)) {
+              core.setOutput('valid', 'false');
+              core.setOutput('error', `Code does not appear to use the selected project "${project}". Did you select the wrong project?`);
+              core.setOutput('category', category);
+              core.setOutput('project', project);
+              core.setOutput('description', description);
+              core.setOutput('code', code);
+              return;
+            }
+
+            core.setOutput('valid', 'true');
 
             core.setOutput('category', category);
             core.setOutput('project', project);
