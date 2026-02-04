@@ -178,9 +178,16 @@ jobs:
           DESCRIPTION="${{ steps.parse.outputs.description }}"
           GIST_URL="${{ steps.gist.outputs.url }}"
           USERNAME="${{ github.event.issue.user.login }}"
+          CODE="${{ steps.ruff.outputs.code }}"
+
+          # Check for web links in the code
+          TAGS=""
+          if echo "$CODE" | grep -qE 'https?://'; then
+            TAGS=" [web]"
+          fi
 
           # Create the new entry
-          NEW_ENTRY="- [${DESCRIPTION}](${GIST_URL}) by @${USERNAME}"
+          NEW_ENTRY="- [${DESCRIPTION}](${GIST_URL}) by @${USERNAME}${TAGS}"
 
           # Determine which section to update based on category
           case "$CATEGORY" in
