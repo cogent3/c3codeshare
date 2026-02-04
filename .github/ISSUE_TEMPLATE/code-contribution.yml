@@ -1,17 +1,8 @@
 name: Code Contribution
 description: Submit a Python code example using cogent3 or related projects
-title: "[Contribution]: "
+title: "Contribution: "
 labels: ["contribution"]
 body:
-  - type: input
-    id: title
-    attributes:
-      label: Contribution name
-      description: A short name for your code contribution
-      placeholder: e.g., "Calculate pairwise distances"
-    validations:
-      required: true
-
   - type: dropdown
     id: category
     attributes:
