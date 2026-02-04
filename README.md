@@ -1,6 +1,6 @@
 # Community contributions for cogent3 and related projects
 
-To make a contribution, [create a new issue](https://github.com/cogent3/c3community/issues/new/choose), select "Code Contribution" and complete the form. Your code will be vetted and styled. If it does not use one of the projects listed, or has syntax errors, then the issue will be automatically labeled as invalid. We are also restricting contributions to less than 100 lines of code.
+To make a contribution, [create a new issue](https://github.com/cogent3/c3community/issues/new/choose), select "Code Contribution" and complete the form. Your code will be vetted and styled. If it passes, your issue will automatically be closed and an entry added to this README 🎉. If it does not use one of the projects listed, has syntax errors, or exceeds 100 lines of code, then the issue will be automatically labeled as invalid and remain open for you to fix.
 
 Select "Blank issue" if:
 
