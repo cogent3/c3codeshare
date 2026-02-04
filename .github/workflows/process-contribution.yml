@@ -207,13 +207,13 @@ jobs:
           # Determine which section to update based on category
           case "$CATEGORY" in
             "Data sampling")
-              SECTION="## Data sampling"
+              SECTION="### Data sampling"
               ;;
             "Phylogenetic analysis")
-              SECTION="## Phylogenetic analysis"
+              SECTION="### Phylogenetic analysis"
               ;;
             "Visualisation")
-              SECTION="## Visualisation"
+              SECTION="### Visualisation"
               ;;
           esac
 
@@ -235,7 +235,7 @@ jobs:
               content = re.sub(pattern, replacement, content)
           else:
               # Section exists but comment was replaced, find next section or end
-              pattern = rf'({re.escape(section)}\n)(.*?)(\n## |\Z)'
+              pattern = rf'({re.escape(section)}\n)(.*?)(\n### |\n## |\Z)'
               match = re.search(pattern, content, re.DOTALL)
               if match:
                   existing = match.group(2).rstrip()
