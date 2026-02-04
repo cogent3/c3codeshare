@@ -156,10 +156,8 @@ jobs:
           ruff check --fix-only /tmp/code_to_format.py 2>/dev/null || true
           ruff format /tmp/code_to_format.py 2>/dev/null
 
-          # Output formatted code
-          echo "code<<ENDOFCODE" >> $GITHUB_OUTPUT
-          cat /tmp/code_to_format.py >> $GITHUB_OUTPUT
-          echo "ENDOFCODE" >> $GITHUB_OUTPUT
+          # Store path for next step
+          echo "code_file=/tmp/code_to_format.py" >> $GITHUB_OUTPUT
 
       - name: Create gist
         if: steps.parse.outputs.valid == 'true' && steps.syntax.outputs.valid == 'true'
@@ -170,9 +168,10 @@ jobs:
         with:
           github-token: ${{ secrets.GIST_TOKEN }}
           script: |
+            const fs = require('fs');
             const description = '${{ steps.parse.outputs.description }}';
             const project = '${{ steps.parse.outputs.project }}';
-            const code = `${{ steps.ruff.outputs.code }}`;
+            const code = fs.readFileSync('${{ steps.ruff.outputs.code_file }}', 'utf8');
 
             const filename = `${project}_example.py`;
 
@@ -196,11 +195,10 @@ jobs:
           DESCRIPTION="${{ steps.parse.outputs.description }}"
           GIST_URL="${{ steps.gist.outputs.url }}"
           USERNAME="${{ github.event.issue.user.login }}"
-          CODE="${{ steps.ruff.outputs.code }}"
 
           # Check for web links in the code
           TAGS=""
-          if echo "$CODE" | grep -qE 'https?://'; then
+          if grep -qE 'https?://' "${{ steps.ruff.outputs.code_file }}"; then
             TAGS=" [web]"
           fi
 
