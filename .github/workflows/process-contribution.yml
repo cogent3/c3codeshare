@@ -1,0 +1,253 @@
+name: Process Code Contribution
+
+on:
+  issues:
+    types: [opened]
+
+concurrency:
+  group: readme-update
+  cancel-in-progress: false
+
+jobs:
+  process:
+    if: contains(github.event.issue.labels.*.name, 'contribution')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Parse and validate contribution
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueBody = context.payload.issue.body;
+
+            // Parse form fields from issue body
+            const parseField = (fieldName) => {
+              const regex = new RegExp(`### ${fieldName}\\s*\\n\\n([\\s\\S]*?)(?=\\n###|$)`);
+              const match = issueBody.match(regex);
+              return match ? match[1].trim() : null;
+            };
+
+            const category = parseField('Category');
+            const project = parseField('Project');
+            const description = parseField('Description');
+            let code = parseField('Code');
+
+            // Remove markdown code fence if present
+            if (code) {
+              code = code.replace(/^```(?:python)?\n?/, '').replace(/\n?```$/, '');
+            }
+
+            // Validate required fields
+            if (!category || !project || !description || !code) {
+              core.setFailed('Missing required fields in issue body');
+              return;
+            }
+
+            // Validate line count
+            const lines = code.trim().split('\n');
+            if (lines.length > 100) {
+              core.setOutput('valid', 'false');
+              core.setOutput('error', `Code exceeds 100 line limit (found ${lines.length} lines)`);
+            } else {
+              core.setOutput('valid', 'true');
+            }
+
+            core.setOutput('category', category);
+            core.setOutput('project', project);
+            core.setOutput('description', description);
+            core.setOutput('code', code);
+            core.setOutput('line_count', lines.length);
+
+      - name: Validate Python syntax
+        if: steps.parse.outputs.valid == 'true'
+        id: syntax
+        run: |
+          cat << 'PYCODE' > /tmp/check_code.py
+          ${{ steps.parse.outputs.code }}
+          PYCODE
+
+          if python3 -m py_compile /tmp/check_code.py 2> /tmp/syntax_error.txt; then
+            echo "valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "valid=false" >> $GITHUB_OUTPUT
+            ERROR=$(cat /tmp/syntax_error.txt)
+            echo "error<<EOF" >> $GITHUB_OUTPUT
+            echo "Python syntax error: $ERROR" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Handle invalid submission
+        if: steps.parse.outputs.valid == 'false' || steps.syntax.outputs.valid == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const parseError = '${{ steps.parse.outputs.error }}';
+            const syntaxError = `${{ steps.syntax.outputs.error }}`;
+            const error = parseError || syntaxError;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Validation Failed**\n\n${error}\n\nPlease edit your submission to fix this issue.`
+            });
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['invalid']
+            });
+
+            core.setFailed(error);
+
+      - name: Format code with ruff
+        if: steps.parse.outputs.valid == 'true' && steps.syntax.outputs.valid == 'true'
+        id: ruff
+        run: |
+          pip install ruff > /dev/null 2>&1
+
+          cat << 'PYCODE' > /tmp/code_to_format.py
+          ${{ steps.parse.outputs.code }}
+          PYCODE
+
+          ruff check --fix-only /tmp/code_to_format.py 2>/dev/null || true
+          ruff format /tmp/code_to_format.py 2>/dev/null
+
+          # Output formatted code
+          echo "code<<ENDOFCODE" >> $GITHUB_OUTPUT
+          cat /tmp/code_to_format.py >> $GITHUB_OUTPUT
+          echo "ENDOFCODE" >> $GITHUB_OUTPUT
+
+      - name: Create gist
+        if: steps.parse.outputs.valid == 'true' && steps.syntax.outputs.valid == 'true'
+        id: gist
+        uses: actions/github-script@v7
+        env:
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+        with:
+          github-token: ${{ secrets.GIST_TOKEN }}
+          script: |
+            const description = '${{ steps.parse.outputs.description }}';
+            const project = '${{ steps.parse.outputs.project }}';
+            const code = `${{ steps.ruff.outputs.code }}`;
+
+            const filename = `${project}_example.py`;
+
+            const response = await github.rest.gists.create({
+              description: description,
+              public: true,
+              files: {
+                [filename]: {
+                  content: code
+                }
+              }
+            });
+
+            core.setOutput('url', response.data.html_url);
+            core.setOutput('id', response.data.id);
+
+      - name: Update README
+        if: steps.parse.outputs.valid == 'true' && steps.syntax.outputs.valid == 'true'
+        run: |
+          CATEGORY="${{ steps.parse.outputs.category }}"
+          DESCRIPTION="${{ steps.parse.outputs.description }}"
+          GIST_URL="${{ steps.gist.outputs.url }}"
+          USERNAME="${{ github.event.issue.user.login }}"
+
+          # Create the new entry
+          NEW_ENTRY="- [${DESCRIPTION}](${GIST_URL}) by @${USERNAME}"
+
+          # Determine which section to update based on category
+          case "$CATEGORY" in
+            "Data sampling")
+              SECTION="## Data sampling"
+              ;;
+            "Phylogenetic analysis")
+              SECTION="## Phylogenetic analysis"
+              ;;
+            "Visualisation")
+              SECTION="## Visualisation"
+              ;;
+          esac
+
+          # Use Python to insert the entry after the section header
+          python3 << EOF
+          import re
+
+          with open('README.md', 'r') as f:
+              content = f.read()
+
+          section = """$SECTION"""
+          new_entry = """$NEW_ENTRY"""
+
+          # Find the section and insert after the comment line
+          pattern = rf'({re.escape(section)}\n<!-- contributions will be added here -->)'
+          replacement = rf'\1\n{new_entry}'
+
+          if re.search(pattern, content):
+              content = re.sub(pattern, replacement, content)
+          else:
+              # Section exists but comment was replaced, find next section or end
+              pattern = rf'({re.escape(section)}\n)(.*?)(\n## |\Z)'
+              match = re.search(pattern, content, re.DOTALL)
+              if match:
+                  existing = match.group(2).rstrip()
+                  new_content = f'{existing}\n{new_entry}' if existing else new_entry
+                  content = re.sub(pattern, rf'\1{new_content}\n\3', content, flags=re.DOTALL)
+
+          with open('README.md', 'w') as f:
+              f.write(content)
+          EOF
+
+      - name: Commit README changes
+        if: steps.parse.outputs.valid == 'true' && steps.syntax.outputs.valid == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add README.md
+          git commit -m "Add contribution: ${{ steps.parse.outputs.description }}"
+          git push
+
+      - name: Comment on issue with success
+        if: steps.parse.outputs.valid == 'true' && steps.syntax.outputs.valid == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const gistUrl = '${{ steps.gist.outputs.url }}';
+            const description = '${{ steps.parse.outputs.description }}';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ **Contribution Processed Successfully!**\n\n` +
+                    `Your code has been published as a gist: ${gistUrl}\n\n` +
+                    `The README has been updated with your contribution. Thank you!`
+            });
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['processed']
+            });
+
+      - name: Close issue
+        if: steps.parse.outputs.valid == 'true' && steps.syntax.outputs.valid == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });

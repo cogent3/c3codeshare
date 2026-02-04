@@ -1,0 +1,63 @@
+name: Code Contribution
+description: Submit a Python code example using cogent3 or related projects
+title: "[Contribution]: "
+labels: ["contribution"]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Contribution name
+      description: A short name for your code contribution
+      placeholder: e.g., "Calculate pairwise distances"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Select the category that best fits your contribution
+      options:
+        - Data sampling
+        - Phylogenetic analysis
+        - Visualisation
+    validations:
+      required: true
+
+  - type: dropdown
+    id: project
+    attributes:
+      label: Project
+      description: Select the primary project your code uses
+      options:
+        - cogent3
+        - scitrack
+        - ensembl_tui
+        - diverse_seq
+        - piqtree
+        - sc_supertree
+        - phylim
+    validations:
+      required: true
+
+  - type: input
+    id: description
+    attributes:
+      label: Description
+      description: One sentence describing what your code does
+      placeholder: e.g., "Calculates pairwise genetic distances from a sequence alignment"
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code
+      description: Your Python code (max 100 lines)
+      placeholder: |
+        # Your Python code here
+        from cogent3 import load_aligned_seqs
+        ...
+      render: python
+    validations:
+      required: true
