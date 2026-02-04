@@ -16,7 +16,7 @@ Select "Blank issue" if:
 ## User provided code examples
 
 > [!WARNING]
-> The cogent3 developers provide no warranty regarding the correctness of the linked code or that it will not cause unintended effects. Users assume full responsibility for reviewing and using any code obtained from this repository. We do specifically identify contributions that include URLs, but these can be entirely appropriate -- use your judgement.
+> The cogent3 developers provide no warranty regarding the correctness of the linked code or that it will not cause unintended effects. Users assume full responsibility for reviewing and using any code obtained from this repository. We do specifically identify contributions that include URLs (the text `[web]` is added), but these can be entirely appropriate -- use your judgement.
 
 ### Data sampling
 <!-- contributions will be added here -->
