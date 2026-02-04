@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   process:
-    if: contains(github.event.issue.labels.*.name, 'contribution')
+    if: startsWith(github.event.issue.title, 'Contribution:')
     runs-on: ubuntu-latest
     permissions:
       issues: write
