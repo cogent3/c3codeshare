@@ -206,7 +206,7 @@ jobs:
           fi
 
           # Create the new entry
-          NEW_ENTRY="- [${DESCRIPTION}](${GIST_URL}) by @${USERNAME}${TAGS}"
+          NEW_ENTRY="- [${DESCRIPTION}](${GIST_URL}) by [@${USERNAME}](https://github.com/${USERNAME})${TAGS}"
 
           # Determine which section to update based on category
           case "$CATEGORY" in
