@@ -79,11 +79,15 @@ jobs:
               return;
             }
 
-            // Validate that the selected project is imported
-            const importPattern = new RegExp(`^\\s*(import\\s+${project}|from\\s+${project}[\\s.])`, 'm');
-            if (!importPattern.test(code)) {
+            // Validate that at least one listed project is imported
+            const listedProjects = ['cogent3', 'scitrack', 'ensembl_tui', 'diverse_seq', 'piqtree', 'sc_supertree', 'phylim'];
+            const usesListedProject = listedProjects.some(proj => {
+              const importPattern = new RegExp(`^\\s*(import\\s+${proj}|from\\s+${proj}[\\s.])`, 'm');
+              return importPattern.test(code);
+            });
+            if (!usesListedProject) {
               core.setOutput('valid', 'false');
-              core.setOutput('error', `Code does not appear to use the selected project "${project}". Did you select the wrong project?`);
+              core.setOutput('error', `Code does not appear to import any of the listed projects (${listedProjects.join(', ')}). Please ensure your code imports at least one.`);
               core.setOutput('category', category);
               core.setOutput('project', project);
               core.setOutput('description', description);
