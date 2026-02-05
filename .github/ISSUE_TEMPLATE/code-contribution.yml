@@ -1,8 +1,13 @@
 name: Code Contribution
 description: Submit a Python code example using cogent3 or related projects
-title: "Contribution: "
+title: "Contribution: [Your title here]"
 labels: ["contribution"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        The issue title (after "Contribution:") will be used as the entry in the README.
+
   - type: dropdown
     id: category
     attributes:
@@ -35,7 +40,7 @@ body:
     id: description
     attributes:
       label: Description
-      description: One sentence describing what your code does
+      description: One sentence describing what your code does. This will appear above the gist code.
       placeholder: e.g., "Calculates pairwise genetic distances from a sequence alignment"
     validations:
       required: true

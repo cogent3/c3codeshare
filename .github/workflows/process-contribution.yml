@@ -43,6 +43,14 @@ jobs:
         with:
           script: |
             const issueBody = context.payload.issue.body;
+            const issueTitle = context.payload.issue.title;
+
+            // Extract the title after "Contribution: " prefix
+            const title = issueTitle.replace(/^Contribution:\s*/, '').trim();
+            if (!title) {
+              core.setFailed('Issue title is empty after "Contribution:" prefix');
+              return;
+            }
 
             // Parse form fields from issue body
             const parseField = (fieldName) => {
@@ -97,6 +105,7 @@ jobs:
 
             core.setOutput('valid', 'true');
 
+            core.setOutput('title', title);
             core.setOutput('category', category);
             core.setOutput('project', project);
             core.setOutput('description', description);
@@ -195,7 +204,7 @@ jobs:
         if: steps.parse.outputs.valid == 'true' && steps.syntax.outputs.valid == 'true'
         run: |
           CATEGORY="${{ steps.parse.outputs.category }}"
-          DESCRIPTION="${{ steps.parse.outputs.description }}"
+          TITLE="${{ steps.parse.outputs.title }}"
           GIST_URL="${{ steps.gist.outputs.url }}"
           USERNAME="${{ github.event.issue.user.login }}"
 
@@ -206,7 +215,7 @@ jobs:
           fi
 
           # Create the new entry
-          NEW_ENTRY="- [${DESCRIPTION}](${GIST_URL}) by [@${USERNAME}](https://github.com/${USERNAME})${TAGS}"
+          NEW_ENTRY="- [${TITLE}](${GIST_URL}) by [@${USERNAME}](https://github.com/${USERNAME})${TAGS}"
 
           # Determine which section to update based on category
           case "$CATEGORY" in
@@ -256,7 +265,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add README.md
-          git commit -m "Add contribution: ${{ steps.parse.outputs.description }}"
+          git commit -m "Add contribution: ${{ steps.parse.outputs.title }}"
           git push
 
       - name: Comment on issue with success
