@@ -34,6 +34,7 @@ Select "Blank issue" if:
 
 ### Phylogenetic analysis
 <!-- contributions will be added here -->
+- [How to calculate a pairwise distance matrix using an empirical protein substitution model with piqtree.](https://gist.github.com/GavinHuttley/e0db87617229553946bf301f28c50ceb) by @GavinHuttley [web]
 
 ### Visualisation
 <!-- contributions will be added here -->
