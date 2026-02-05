@@ -30,6 +30,7 @@ Select "Blank issue" if:
 
 ### Data sampling
 <!-- contributions will be added here -->
+- [Pairwise distances from amino acid model](https://gist.github.com/GavinHuttley/40f0935e6ccd88af9cae3dc6e4bb82a6) by [@GavinHuttley](https://github.com/GavinHuttley) [web]
 - [Takes nexus partition and alignment files and writes out separate alignment, dropping sequences with 0 canonical bases.](https://gist.github.com/GavinHuttley/790a024c90841967c647e1a1105a8b9b) by @GavinHuttley
 
 ### Phylogenetic analysis
