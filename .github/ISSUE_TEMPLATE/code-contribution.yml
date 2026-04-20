@@ -27,6 +27,7 @@ body:
       description: Select the primary project your code uses
       options:
         - cogent3
+        - scinexus
         - scitrack
         - ensembl_tui
         - diverse_seq
