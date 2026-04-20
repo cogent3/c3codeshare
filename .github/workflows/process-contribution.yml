@@ -88,7 +88,7 @@ jobs:
             }
 
             // Validate that at least one listed project is imported
-            const listedProjects = ['cogent3', 'scitrack', 'ensembl_tui', 'diverse_seq', 'piqtree', 'sc_supertree', 'phylim'];
+            const listedProjects = ['cogent3', 'scinexus', 'scitrack', 'ensembl_tui', 'diverse_seq', 'piqtree', 'sc_supertree', 'phylim'];
             const usesListedProject = listedProjects.some(proj => {
               const importPattern = new RegExp(`^\\s*(import\\s+${proj}|from\\s+${proj}[\\s.])`, 'm');
               return importPattern.test(code);
